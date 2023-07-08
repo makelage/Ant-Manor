@@ -2,7 +2,7 @@
  * @Author: TonyJiangWJ
  * @Date: 2020-11-20 16:55:08
  * @Last Modified by: TonyJiangWJ
- * @Last Modified time: 2022-11-13 14:01:31
+ * @Last Modified time: 2023-07-05 15:46:45
  * @Description: 
  */
 
@@ -10,7 +10,7 @@ let { config } = require('../config.js')(runtime, global)
 let sRequire = require('../lib/SingletonRequirer.js')(runtime, global)
 let { debugInfo, warnInfo, errorInfo, infoLog, logInfo, debugForDev } = sRequire('LogUtils')
 let commonFunction = sRequire('CommonFunction')
-let offset = config.bang_offset
+let CanvasDrawer = require('../lib/CanvasDrawer.js')
 
 function VisualHelper () {
   let self = this
@@ -45,12 +45,12 @@ function VisualHelper () {
       // 清空内容
       canvas.drawColor(0xFFFFFF, android.graphics.PorterDuff.Mode.CLEAR)
       if (self.drawer == null) {
-        self.drawer = new Drawer(canvas, paint)
+        self.drawer = new CanvasDrawer(canvas, paint, config.bang_offset)
       }
 
       // let canvas = new com.stardust.autojs.core.graphics.ScriptCanvas(width, height)
 
-      !self.disableTips && drawText('可视化辅助工具运行中', { x: 100, y: 300 + offset }, canvas, paint, null, 30)
+      !self.disableTips && self.drawer.drawText('可视化辅助工具运行中', { x: 100, y: 300 }, null, 30)
       let toDrawList = self.toDrawList
       if (toDrawList && toDrawList.length > 0) {
         toDrawList.forEach(drawInfo => {
@@ -164,91 +164,6 @@ function VisualHelper () {
 
 }
 
-
-function convertArrayToRect (a) {
-  // origin array left top width height
-  // left top right bottom
-  return new android.graphics.Rect(a[0], a[1] + offset, (a[0] + a[2]), (a[1] + offset + a[3]))
-}
-
-function getPositionDesc (position) {
-  return position[0] + ', ' + position[1] + ' w:' + position[2] + ',h:' + position[3]
-}
-
-function getRectCenter (position) {
-  return {
-    x: parseInt(position[0] + position[2] / 2),
-    y: parseInt(position[1] + position[3] / 2)
-  }
-}
-
-function drawRectAndText (desc, position, colorStr, canvas, paint) {
-  let color = colors.parseColor(colorStr)
-
-  paint.setStrokeWidth(1)
-  paint.setStyle(Paint.Style.STROKE)
-  // 反色
-  paint.setARGB(255, color >> 16 & 0xff, color >> 8 & 0xff, color & 0xff)
-  canvas.drawRect(convertArrayToRect(position), paint)
-  paint.setARGB(255, 255 - (color >> 16 & 0xff), 255 - (color >> 8 & 0xff), 255 - (color & 0xff))
-  paint.setStrokeWidth(1)
-  paint.setTextSize(20)
-  paint.setStyle(Paint.Style.FILL)
-  canvas.drawText(desc, position[0], position[1] + offset, paint)
-  paint.setTextSize(10)
-  paint.setStrokeWidth(1)
-  paint.setARGB(255, 0, 0, 0)
-  // let center = getRectCenter(position)
-  // canvas.drawText(getPositionDesc(position), center.x, center.y, paint)
-}
-
-function drawCircleAndText (desc, circleInfo, colorStr, canvas, paint) {
-  let color = colors.parseColor(colorStr)
-  // 文字反色
-  paint.setARGB(255, 255 - (color >> 16 & 0xff), 255 - (color >> 8 & 0xff), 255 - (color & 0xff))
-  drawText(desc, { x: circleInfo.x, y: circleInfo.y }, canvas, paint)
-  paint.setStrokeWidth(3)
-  paint.setStyle(Paint.Style.STROKE)
-  paint.setARGB(255, color >> 16 & 0xff, color >> 8 & 0xff, color & 0xff)
-  canvas.drawCircle(circleInfo.x, circleInfo.y + offset, circleInfo.radius, paint)
-}
-
-function drawText (text, position, canvas, paint, colorStr, textSize) {
-  textSize = textSize || 20
-  if (colorStr) {
-    let color = colors.parseColor(colorStr)
-    paint.setARGB(255, color >> 16 & 0xff, color >> 8 & 0xff, color & 0xff)
-  } else {
-    paint.setARGB(255, 0, 0, 255)
-  }
-  paint.setStrokeWidth(1)
-  paint.setStyle(Paint.Style.FILL)
-  paint.setTextSize(textSize)
-  canvas.drawText(text, position.x, position.y + offset, paint)
-}
-
-function drawCoordinateAxis (canvas, paint) {
-  let width = canvas.width
-  let height = canvas.height
-  paint.setStyle(Paint.Style.FILL)
-  paint.setTextSize(10)
-  let colorVal = colors.parseColor('#65f4fb')
-  paint.setARGB(255, colorVal >> 16 & 0xFF, colorVal >> 8 & 0xFF, colorVal & 0xFF)
-  for (let x = 50; x < width; x += 50) {
-    paint.setStrokeWidth(0)
-    canvas.drawText(x, x, 10 + offset, paint)
-    paint.setStrokeWidth(0.5)
-    canvas.drawLine(x, 0, x + offset, height, paint)
-  }
-
-  for (let y = 50; y < height; y += 50) {
-    paint.setStrokeWidth(0)
-    canvas.drawText(y, 0, y + offset, paint)
-    paint.setStrokeWidth(0.5)
-    canvas.drawLine(0, y + offset, width, y + offset, paint)
-  }
-}
-
 function validRegion (region) {
   if (!region || region.length !== 4) {
     return false
@@ -261,31 +176,4 @@ function validRegion (region) {
   }
   return true
 }
-
-function Drawer (canvas, paint) {
-  this.canvas = canvas
-  this.paint = paint
-  this.color = '#ffffff'
-  this.textSize = 20
-  this.drawText = function (text, position, color, textSize) {
-    this.color = color || this.color
-    this.textSize = textSize || this.textSize
-    drawText(text, position, this.canvas, this.paint, this.color, this.textSize)
-  }
-
-  this.drawRectAndText = function (text, position, color, textSize) {
-    this.color = color || this.color
-    this.textSize = textSize || this.textSize
-    this.paint.setTextSize(this.textSize)
-    drawRectAndText(text, position, this.color, this.canvas, this.paint)
-  }
-
-  this.drawCircleAndText = function (text, circleInfo, color, textSize) {
-    this.color = color || this.color
-    this.textSize = textSize || this.textSize
-    this.paint.setTextSize(this.textSize)
-    drawCircleAndText(text, circleInfo, this.color, this.canvas, this.paint)
-  }
-}
-
 module.exports = VisualHelper
