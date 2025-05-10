@@ -76,7 +76,25 @@ try {
           NotificationHelper.createNotification('投喂完毕，等待下一次投喂', '下一次投喂时间：' + remainTime + '分钟后：' + dateFormat(new Date(timestamp)))
         }
       } else {
-        NotificationHelper.createNotification('蚂蚁庄园今日投喂完毕', '蚂蚁庄园家庭投喂完毕，明天再来')
+        let checkSuccess = false
+        let targetTitle = widgetUtils.widgetGetOne('请家人吃一顿美食.*')
+        if (targetTitle) {
+          try {
+            let nextButton = targetTitle.parent().child(targetTitle.indexInParent() + 1)
+            if (nextButton.text() == '明天再来') {
+              NotificationHelper.createNotification('蚂蚁庄园今日投喂完毕', '蚂蚁庄园家庭投喂完毕，明天再来')
+              checkSuccess = true
+            } else {
+              warnInfo('当前按钮文本：' + nextButton.text() + ' 不匹配 明天再来')
+            }
+          } catch (e) {
+            errorInfo(['检查 明天再来 失败:' + e])
+          }
+        }
+        if (!checkSuccess) {
+          NotificationHelper.createNotification('蚂蚁庄园今日投喂执行异常', '蚂蚁庄园家庭投喂失败，十分钟后再试')
+          commonFunctions.setUpAutoStart(10)
+        }
       }
     } else {
       NotificationHelper.createNotification('蚂蚁庄园今日投喂执行异常', '蚂蚁庄园家庭投喂失败，十分钟后再试')
