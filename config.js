@@ -225,9 +225,12 @@ let default_fodder_config = {
   chopping_board: files.read(configDataPath + 'fodder/chopping_board.data'),
   farm_collect: files.read(configDataPath + 'fodder/farm_collect.data'),
   feed_package_full: '饲料袋.*满.*|知道了',
-  ai_type: 'kimi',// kimi、chatgml or empty
+  ai_type: 'ollama',// kimi、chatgml、ollama or empty
   kimi_api_key: '',
   chatgml_api_key: '',
+  ollama_cloud_api_key: '',
+  ollama_cloud_model: 'gpt-oss:120b',
+  ollama_cloud_url: 'https://ollama.com',
   disable_if_achievement_done: true,
   fodder_task_list: '信用卡账单|百度地图|快手|淘宝视频|淘金币小镇|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场',
 }
@@ -236,4 +239,7 @@ config.fodder_config = config.convertDefaultData(default_fodder_config, CONFIG_S
 config.ai_type = config.fodder_config.ai_type
 config.kimi_api_key = config.fodder_config.kimi_api_key
 config.chatgml_api_key = config.fodder_config.chatgml_api_key
+config.ollama_cloud_api_key = config.fodder_config.ollama_cloud_api_key
+config.ollama_cloud_model = config.fodder_config.ollama_cloud_model
+config.ollama_cloud_url = config.fodder_config.ollama_cloud_url
 config.code_version = 'v1.3.7.4'

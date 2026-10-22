@@ -319,14 +319,16 @@ function Collector () {
     let ai_type = config.ai_type || 'kimi'
     let kimi_api_key = config.kimi_api_key
     let chatgml_api_key = config.chatgml_api_key
+    let ollama_api_key = config.ollama_cloud_api_key
     if (toAnswer) {
       toAnswer.click()
       sleep(1000)
       widgetUtils.widgetWaiting('题目来源.*')
       sleep(1000)
-      let key = ai_type === 'kimi' ? kimi_api_key : chatgml_api_key
+      let key = ai_type === 'kimi' ? kimi_api_key : (ai_type === 'ollama' ? ollama_api_key : chatgml_api_key)
       if (!key) {
         LogFloaty.pushLog('推荐去KIMI开放平台申请API Key并在可视化配置中进行配置')
+        LogFloaty.pushLog('或者使用Ollama云端模型 在可视化配置中填写ollama_cloud_api_key')
         LogFloaty.pushLog('否则免费接口这个智障AI经常性答错')
       }
       let result = AiUtil.getQuestionInfo(ai_type, key)

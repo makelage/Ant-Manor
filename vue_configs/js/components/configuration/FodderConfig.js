@@ -9,9 +9,12 @@ const FodderConfig = {
         chopping_board: '',
         farm_collect: '',
         feed_package_full: '饲料袋.*满.*|知道了',
-        ai_type: 'kimi',// kimi、chatgml or empty
+        ai_type: 'ollama',// kimi、chatgml、ollama or empty
         kimi_api_key: '',
         chatgml_api_key: '',
+        ollama_cloud_api_key: '',
+        ollama_cloud_model: 'gpt-oss:120b',
+        ollama_cloud_url: 'https://ollama.com',
         disable_if_achievement_done: true,
         fodder_task_list: '信用卡账单|百度地图|快手|淘宝视频|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场'
       },
@@ -68,9 +71,13 @@ const FodderConfig = {
     <tip-block>智谱清言(chatgml)令牌请前往开放平台申请（新用户首月免费100万token，后续似乎按量收费，但是响应比Kimi快）：https://open.bigmodel.cn/usercenter/apikeys</tip-block>
     <tip-block>默认的免费接口是个大智障经常性出错或者答错，所以尽量自己去申请KIMI的接口权限。另外真的很推荐使用KIMI小程序或者网页端服务，大部分情况下都很够用</tip-block>
     <tip-block>这个AI答题功能也适用于蚂蚁庄园和蚂蚁新村，打开对应答题页面再点击AI答题即可</tip-block>
-    <tip-block>AI类型可选：kimi、chatgml 留空或者乱填使用默认弱智AI. chatgml速度较快但后期可能需要付费，他和kimi之间的正确率各有优劣，请自行选择</tip-block>
+    <tip-block>AI类型可选：kimi、chatgml、ollama 留空或者乱填使用默认弱智AI. chatgml速度较快但后期可能需要付费，他和kimi之间的正确率各有优劣，请自行选择</tip-block>
     <van-field v-model="configs.ai_type" label="AI类型" label-width="14em" type="text" placeholder="留空使用默认配置" input-align="right"/>
     <van-field v-model="configs.kimi_api_key" label="KIMI密钥" label-width="14em" type="text" placeholder="留空使用默认AI接口" input-align="right"/>
     <van-field v-model="configs.chatgml_api_key" label="智谱清言密钥" label-width="14em" type="text" placeholder="留空使用默认AI接口" input-align="right"/>
+    <tip-block>Ollama云端模型（默认gpt-oss:120b），密钥请在 https://ollama.com 账号设置中获取；与本地ollama服务使用同一套API格式，配置ollama_cloud_url即可切换其他Ollama服务地址</tip-block>
+    <van-field v-model="configs.ollama_cloud_api_key" label="Ollama云端密钥" label-width="14em" type="text" placeholder="留空则不使用Ollama云端" input-align="right"/>
+    <van-field v-model="configs.ollama_cloud_model" label="Ollama模型" label-width="14em" type="text" placeholder="默认gpt-oss:120b" input-align="right"/>
+    <van-field v-model="configs.ollama_cloud_url" label="Ollama接口地址" label-width="14em" type="text" placeholder="默认https://ollama.com" input-align="right"/>
   </div>`
 }
