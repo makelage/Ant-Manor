@@ -148,8 +148,8 @@ function Collector () {
     [
       // 答题
       () => this.answerQuestion(),
-      // 小视频
-      () => this.watchVideo(),
+      // 金豆夺宝签到
+      () => this.jindouSign(),
       // 逛一逛
       () => this.browseAds(),
       // 抽抽乐
@@ -157,7 +157,9 @@ function Collector () {
       // 农场逛一逛
       () => this.farmHanging(),
       // 鲸探 小号需要实名认证 跳过
-      () => !skipMainAccountTask && this.feedFish(),
+      // 注意：鲸探页面为canvas渲染无控件文本（2026-10-23实测：剧情引导页57个节点均无text/desc），
+      // 暂无法自动化，保持禁用；若后续版本恢复控件可改为 '.*鲸探.*' 重新启用
+      // () => !skipMainAccountTask && this.feedFish(),
       // 扭蛋
       () => this.openGashapon(),
       // 做饭领食材，消耗60领90 不是很必要，可以通过做饭领食材完成
@@ -251,7 +253,7 @@ function Collector () {
   }
 
   this.doCommonTaskByTitle = function (executedCount, executeLimit) {
-    let taskListStr = config.fodder_config.fodder_task_list || '信用卡账单|百度地图|快手|淘宝视频|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场'
+    let taskListStr = config.fodder_config.fodder_task_list || '信用卡账单|百度地图|淘金币小镇|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场'
     let titleRegex = new RegExp('.*(' + taskListStr + ').*去完成.*')
     let executed = false
     let skipTitles = []
@@ -312,6 +314,47 @@ function Collector () {
     return false
   }
 
+  /**
+   * 金豆夺宝签到
+   * 2026-10-23 手机实测流程：点击任务卡打开金豆夺宝页面 -> 弹出「新人签到奖励」浮层
+   * （浮层按钮为图片渲染无控件文本）-> 点击「签到领现金」-> 任务完成
+   * 通过OCR定位按钮点击，避免误点浮层外的「领支金豆」（会弹出游戏任务）
+   */
+  this.jindouSign = function () {
+    LogFloaty.pushLog('检查金豆夺宝签到任务')
+    return findAndOpenTaskPage('.*金豆夺宝.*', null, ({ enter }) => {
+      if (enter) {
+        sleep(2000)
+        // 等待签到弹窗加载，通过OCR定位「签到领现金」按钮
+        let signBtn = null
+        for (let i = 0; i < 10; i++) {
+          let screen = images.captureScreen()
+          if (localOcr.enabled) {
+            let result = localOcr.recognizeWithBounds(screen, null, '签到领现金')
+            if (result && result.length > 0) {
+              signBtn = result[0].bounds
+              break
+            }
+          }
+          sleep(1000)
+        }
+        if (signBtn) {
+          LogFloaty.pushLog('点击签到领现金')
+          automator.click(signBtn.centerX(), signBtn.centerY())
+          sleep(2500)
+        } else {
+          LogFloaty.pushLog('未找到签到领现金按钮，可能今日已签到')
+        }
+        this.checkAndBack()
+        return true
+      } else {
+        LogFloaty.pushLog('今日金豆夺宝签到已完成')
+      }
+    }, () => {
+      LogFloaty.pushErrorLog('未找到金豆夺宝签到入口')
+    })
+  }
+
   this.answerQuestion = function () {
     let executed = false
     LogFloaty.pushLog('查找答题')
@@ -348,31 +391,6 @@ function Collector () {
     }
     return executed
   }
-
-  this.watchVideo = function () {
-    LogFloaty.pushLog('查找看视频')
-    return findAndOpenTaskPage('.*庄园小视频.*', null, ({ enter }) => {
-      if (enter) {
-        // 真正执行任务时才静音
-        device.setMusicVolume(0)
-        sleep(1000)
-        LogFloaty.pushLog('看视频 等待倒计时结束')
-        let limit = 20
-        while (limit-- > 0) {
-          sleep(1000)
-          LogFloaty.replaceLastLog('看视频 等待倒计时结束 剩余：' + limit + 's')
-        }
-        this.checkAndBack()
-        return true
-      } else {
-        LogFloaty.pushLog('今日视频已观看')
-      }
-      return false
-    }, () => {
-      LogFloaty.pushErrorLog('未找到看视频入口')
-    })
-  }
-
 
   this.browseAds = function () {
     LogFloaty.pushLog('准备逛杂货铺')

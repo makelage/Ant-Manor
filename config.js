@@ -232,7 +232,7 @@ let default_fodder_config = {
   ollama_cloud_model: 'gpt-oss:120b',
   ollama_cloud_url: 'https://ollama.com',
   disable_if_achievement_done: true,
-  fodder_task_list: '信用卡账单|百度地图|快手|淘宝视频|淘金币小镇|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场',
+  fodder_task_list: '信用卡账单|百度地图|淘金币小镇|今日头条极速版|淘宝特价版|闲鱼|菜鸟|支付宝运动|助农专场|淘宝芭芭农场',
 }
 default_config.fodder_config = default_fodder_config
 config.fodder_config = config.convertDefaultData(default_fodder_config, CONFIG_STORAGE_NAME + '_fodder')
