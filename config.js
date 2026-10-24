@@ -49,6 +49,7 @@ var default_config = {
   multi_device_login: false,
   // 是否捡屎
   pick_shit: false,
+  // 百度OCR Key/Secret：勿在文件明文保存，配置到 Storages（chick_config_version.apiKey / secretKey）
   apiKey: '',
   secretKey: '',
   // 自动更新后需要强制执行的标记
@@ -228,6 +229,7 @@ let default_fodder_config = {
   ai_type: 'ollama',// kimi、chatgml、ollama or empty
   kimi_api_key: '',
   chatgml_api_key: '',
+  // ollama 云端 Key：勿在文件明文保存，配置到 Storages（chick_config_version_fodder.ollama_cloud_api_key）
   ollama_cloud_api_key: '',
   ollama_cloud_model: 'gpt-oss:120b',
   ollama_cloud_url: 'https://ollama.com',
